@@ -27,9 +27,8 @@ class ExcitedEchoer(language_model.LanguageModel):
 
   def _sample(self, prompts) -> list[language_model.LMSamplingResult]:
     return [
-        language_model.LMSamplingResult([
-            language_model.LMSample(prompt.text + '!!!')
-            ]) for prompt in prompts
+        language_model.LMSamplingResult(
+            [language_model.LMSample(f'{prompt.text}!!!')]) for prompt in prompts
     ]
 
 

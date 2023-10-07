@@ -119,18 +119,14 @@ class MessageTransform(component.Component):
 
   def __rrshift__(self, x):
     """The right-hand sequential operator (>>)."""
-    if x is None:
-      return self
-    return make_transform(x) >> self
+    return self if x is None else make_transform(x) >> self
 
   def __or__(self, x):
     """The logical or operator (|)."""
     return self._chain(x, LogicalOr)
 
   def __ror__(self, x):
-    if x is None:
-      return self
-    return make_transform(x) | self
+    return self if x is None else make_transform(x) | self
 
   def as_structured(
       self,
@@ -594,9 +590,9 @@ class ParseBool(Parser):
 
   def parse(self, text: str) -> Any:
     lc = text.lower()
-    if lc in ['true', 'yes', '1']:
+    if lc in {'true', 'yes', '1'}:
       return True
-    elif lc in ['false', 'no', '0']:
+    elif lc in {'false', 'no', '0'}:
       return False
     else:
       raise ValueError(f'Cannot convert {text!r} to bool.')

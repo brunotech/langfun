@@ -28,7 +28,7 @@ class BasicTest(unittest.TestCase):
     l = Template('Hello')
     self.assertEqual(l._variables, set())
     l.rebind(template_str='Hello {{x}}')
-    self.assertEqual(l._variables, set(['x']))
+    self.assertEqual(l._variables, {'x'})
 
   def test_attrs(self):
     l = Template('Hello {{x}}', x=1)
@@ -101,6 +101,9 @@ class DefinitionTest(unittest.TestCase):
 
   def test_subclassing(self):
 
+
+
+
     class MyPrompt(Template):
       template_str = 'Hello {{x}}, {{y}} and {{z}}'
       x: int = 1
@@ -108,7 +111,8 @@ class DefinitionTest(unittest.TestCase):
 
       @property
       def z(self):
-        return self.p + '!'
+        return f'{self.p}!'
+
 
     # `p` is required.
     with self.assertRaisesRegex(TypeError, '.* missing 1 required argument'):
@@ -162,12 +166,11 @@ class VarsTest(unittest.TestCase):
   def test_missing_vars(self):
     self.assert_missing_vars(Template('Hello'), set())
     self.assert_missing_vars(Template('Hello {{x}}', x=1), set())
-    self.assert_missing_vars(Template('Hello {{x}}'), set(['x']))
-    self.assert_missing_vars(
-        Template('Hello {{x}}', x=Template('{{y}}')), set(['y'])
-    )
+    self.assert_missing_vars(Template('Hello {{x}}'), {'x'})
+    self.assert_missing_vars(Template('Hello {{x}}', x=Template('{{y}}')), {'y'})
 
   def test_vars(self):
+
     class A(Template):
       """A.
 
@@ -188,43 +191,39 @@ class VarsTest(unittest.TestCase):
     a = A(x=1, y=b)
 
     # Test all direct referred variables.
-    self.assertEqual(a.vars(), set(['x', 'y', 'z']))
-    self.assertEqual(b.vars(), set(['x', 'p', 'q']))
-    self.assertEqual(b.q.vars(), set(['x', 'i', 'j']))
+    self.assertEqual(a.vars(), {'x', 'y', 'z'})
+    self.assertEqual(b.vars(), {'x', 'p', 'q'})
+    self.assertEqual(b.q.vars(), {'x', 'i', 'j'})
 
     # Test direct referred variables that are specified.
-    self.assertEqual(a.vars(specified=True), set(['x', 'y']))
-    self.assertEqual(b.vars(specified=True), set(['x', 'p', 'q']))
-    self.assertEqual(b.q.vars(specified=True), set(['x', 'i']))
+    self.assertEqual(a.vars(specified=True), {'x', 'y'})
+    self.assertEqual(b.vars(specified=True), {'x', 'p', 'q'})
+    self.assertEqual(b.q.vars(specified=True), {'x', 'i'})
 
     # Test direct referred variables that are not specified.
-    self.assertEqual(a.vars(specified=False), set(['z']))
+    self.assertEqual(a.vars(specified=False), {'z'})
     self.assertEqual(b.vars(specified=False), set())
-    self.assertEqual(b.q.vars(specified=False), set(['j']))
+    self.assertEqual(b.q.vars(specified=False), {'j'})
 
     # Test all referred variables in the closure.
-    self.assertEqual(
-        a.vars(closure=True), set(['x', 'y', 'z', 'p', 'q', 'i', 'j'])
-    )
-    self.assertEqual(b.vars(closure=True), set(['x', 'q', 'p', 'i', 'j']))
-    self.assertEqual(b.q.vars(closure=True), set(['x', 'i', 'j']))
+    self.assertEqual(a.vars(closure=True), {'x', 'y', 'z', 'p', 'q', 'i', 'j'})
+    self.assertEqual(b.vars(closure=True), {'x', 'q', 'p', 'i', 'j'})
+    self.assertEqual(b.q.vars(closure=True), {'x', 'i', 'j'})
 
     # Test all leaf variables.
-    self.assertEqual(
-        a.vars(closure=True, leaf=True), set(['x', 'z', 'p', 'i', 'j'])
-    )
-    self.assertEqual(b.vars(closure=True, leaf=True), set(['x', 'p', 'i', 'j']))
-    self.assertEqual(b.q.vars(closure=True, leaf=True), set(['x', 'i', 'j']))
+    self.assertEqual(a.vars(closure=True, leaf=True), {'x', 'z', 'p', 'i', 'j'})
+    self.assertEqual(b.vars(closure=True, leaf=True), {'x', 'p', 'i', 'j'})
+    self.assertEqual(b.q.vars(closure=True, leaf=True), {'x', 'i', 'j'})
 
     # Test all non-leaf variables.
-    self.assertEqual(a.vars(closure=True, leaf=False), set(['y', 'q']))
-    self.assertEqual(b.vars(closure=True, leaf=False), set(['q']))
+    self.assertEqual(a.vars(closure=True, leaf=False), {'y', 'q'})
+    self.assertEqual(b.vars(closure=True, leaf=False), {'q'})
     self.assertEqual(b.q.vars(closure=True, leaf=False), set())
 
     # Test missing variables.
-    self.assertEqual(a.missing_vars, set(['z', 'j']))
-    self.assertEqual(b.missing_vars, set(['j']))
-    self.assertEqual(b.q.missing_vars, set(['j']))
+    self.assertEqual(a.missing_vars, {'z', 'j'})
+    self.assertEqual(b.missing_vars, {'j'})
+    self.assertEqual(b.q.missing_vars, {'j'})
 
 
 class RenderTest(unittest.TestCase):

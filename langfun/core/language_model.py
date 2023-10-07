@@ -151,12 +151,11 @@ class LanguageModel(component.Component):
     """Overrides __init__ to pass through **kwargs to sampling options."""
 
     sampling_options = kwargs.pop('sampling_options', LMSamplingOptions())
-    sampling_options_delta = {}
-
-    for k, v in kwargs.items():
-      if LMSamplingOptions.__schema__.get_field(k) is not None:
-        sampling_options_delta[k] = v
-
+    sampling_options_delta = {
+        k: v
+        for k, v in kwargs.items()
+        if LMSamplingOptions.__schema__.get_field(k) is not None
+    }
     if sampling_options_delta:
       sampling_options.rebind(sampling_options_delta)
 

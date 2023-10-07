@@ -39,9 +39,7 @@ class InMemory(base.LMCacheBase):
     if self.filename is not None:
       records = pg.load(self.filename)
       for record in records:
-        model_cache = {}
-        for entry in record.entries:
-          model_cache[entry.k] = entry.v
+        model_cache = {entry.k: entry.v for entry in record.entries}
         self._cache[record.model_id] = model_cache
 
   def model_ids(self) -> list[str]:
@@ -56,21 +54,17 @@ class InMemory(base.LMCacheBase):
     """Returns the cached keys for a model."""
     if model_id is None:
       for model_cache in self._cache.values():
-        for k in model_cache.keys():
-          yield k
+        yield from model_cache.keys()
     else:
-      for k in self._cache[model_id].keys():
-        yield k
+      yield from self._cache[model_id].keys()
 
   def values(self, model_id: str | None = None) -> Iterator[base.LMCacheEntry]:
     """Returns the cached entries for a model."""
     if model_id is None:
       for model_cache in self._cache.values():
-        for v in model_cache.values():
-          yield v
+        yield from model_cache.values()
     else:
-      for v in self._cache[model_id].values():
-        yield v
+      yield from self._cache[model_id].values()
 
   def items(
       self,
@@ -79,11 +73,9 @@ class InMemory(base.LMCacheBase):
     """Returns the cached items for a model."""
     if model_id is None:
       for model_cache in self._cache.values():
-        for k, v in model_cache.items():
-          yield k, v
+        yield from model_cache.items()
     else:
-      for k, v in self._cache[model_id].items():
-        yield k, v
+      yield from self._cache[model_id].items()
 
   def _get(self, model_id: str, key: Any) -> base.LMCacheEntry | None:
     """Returns a LM cache entry associated with the key."""

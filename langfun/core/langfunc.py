@@ -562,6 +562,4 @@ def call(
         f'Encountered {prompt!r}.')
 
   message = lfun(**kwargs)
-  if returns is None:
-    return message.text
-  return message.result
+  return message.text if returns is None else message.result

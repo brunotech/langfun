@@ -152,13 +152,7 @@ class _EventManager:
     unsubscribed = 0
     sender, sender_type, _ = self._sender_info(sender)
 
-    if sender is not None:
-      # Unsubscribe a single sender.
-      if sender in self._sender_registry:
-        unsubscribed += _remove_list_items(
-            self._sender_registry[sender], lambda x: x is subscriber
-        )
-    else:
+    if sender is None:
       # Unsubscribe all subscriptions for the subscriber.
       subscriber_sender_type = subscriber.sender_type()
       sender_type = sender_type or subscriber_sender_type
@@ -176,6 +170,10 @@ class _EventManager:
               subscriber_list, lambda x: x is subscriber
           )
 
+    elif sender in self._sender_registry:
+      unsubscribed += _remove_list_items(
+          self._sender_registry[sender], lambda x: x is subscriber
+      )
     if unsubscribed == 0:
       raise ValueError(
           f'There is no subscription for {subscriber!r} to unsubscribe.'
@@ -323,10 +321,7 @@ def _get_generic_arg(cls, generic_cls):
 
 def _remove_list_items(list_values, pred) -> int:
   """Remove list items based on predicate."""
-  indices_to_remove = []
-  for i, v in enumerate(list_values):
-    if pred(v):
-      indices_to_remove.append(i)
+  indices_to_remove = [i for i, v in enumerate(list_values) if pred(v)]
   for i in reversed(indices_to_remove):
     list_values.pop(i)
   return len(indices_to_remove)

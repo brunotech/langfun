@@ -179,10 +179,7 @@ def _concurrent_sample(
       silence_on_errors=concurrent.RetryError,
       max_workers=max_workers
   ):
-    if error is None:
-      lm_input, lm_output = result
-    else:
-      lm_input, lm_output = error, error
+    lm_input, lm_output = result if error is None else (error, error)
     if (not ignore_examples_with_errors
         or not (isinstance(lm_input, Exception)
                 or isinstance(lm_output, Exception))):

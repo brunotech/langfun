@@ -246,9 +246,8 @@ class ConcurrentMapTest(unittest.TestCase):
                   retry_interval=1,
                   silence_on_errors=concurrent.RetryError,
                   max_attempts=2,
-              )
-          ),
-          set([
+              )),
+          {
               (1, 1, None),
               (2, 4, None),
               (
@@ -256,7 +255,7 @@ class ConcurrentMapTest(unittest.TestCase):
                   pg.MISSING_VALUE,
                   concurrent.RetryError(fun, [error, error], [1]),
               ),
-          ]),
+          },
       )
 
   def test_concurrent_map_silence_on_errors(self):
@@ -270,15 +269,9 @@ class ConcurrentMapTest(unittest.TestCase):
     with component.context(y=2):
       self.assertEqual(
           set(
-              concurrent.concurrent_map(
-                  fun, [1, 2, 3], silence_on_errors=ValueError
-              )
-          ),
-          set([
-              (1, 1, None),
-              (2, pg.MISSING_VALUE, error),
-              (3, 9, None),
-          ]),
+              concurrent.concurrent_map(fun, [1, 2, 3],
+                                        silence_on_errors=ValueError)),
+          {(1, 1, None), (2, pg.MISSING_VALUE, error), (3, 9, None)},
       )
 
   def test_concurrent_map_with_async_complete(self):
