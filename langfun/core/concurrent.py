@@ -131,9 +131,8 @@ def with_retry(
     def base_interval() -> int:
       if isinstance(retry_interval, tuple):
         return rand.randint(retry_interval[0], retry_interval[1])
-      else:
-        assert isinstance(retry_interval, int)
-        return retry_interval
+      assert isinstance(retry_interval, int)
+      return retry_interval
 
     def next_wait_interval(attempt: int) -> float:
       if not exponential_backoff:
@@ -289,23 +288,17 @@ class Progress:
   @property
   def success_rate(self) -> float:
     """Returns success rate."""
-    if self.completed == 0:
-      return 0.0
-    return self.succeeded / self.completed
+    return 0.0 if self.completed == 0 else self.succeeded / self.completed
 
   @property
   def failure_rate(self) -> float:
     """Returns failure rate."""
-    if self.completed == 0:
-      return 0.0
-    return self.failed / self.completed
+    return 0.0 if self.completed == 0 else self.failed / self.completed
 
   @property
   def avg_duration(self) -> float:
     """Returns average duration each job worked."""
-    if self.completed == 0:
-      return 0.0
-    return self._total_duration / self.completed
+    return 0.0 if self.completed == 0 else self._total_duration / self.completed
 
   def update(self, job: Job) -> None:
     """Mark a job as completed."""
@@ -417,25 +410,26 @@ def concurrent_map(
     progress_bar = tqdm.tqdm(total=total) if show_progress else None
 
     def update_progress_bar(progress: Progress) -> None:
-      if progress_bar is not None:
-        status = status_fn(progress)
-        description = ', '.join([
-            f'{k}: {v}' for k, v in status.items()
-        ])
-        if description:
-          progress_bar.set_description(f'[{description}]')
+      if progress_bar is None:
+        return
+      status = status_fn(progress)
+      description = ', '.join([
+          f'{k}: {v}' for k, v in status.items()
+      ])
+      if description:
+        progress_bar.set_description(f'[{description}]')
 
-        postfix = {
-            'AvgDuration': '%.2f seconds' % progress.avg_duration
-        }
-        if progress.last_error is not None:
-          error_text = repr(progress.last_error)
-          if len(error_text) >= 64:
-            error_text = error_text[:64] + '...'
-          postfix['LastError'] = error_text
+      postfix = {
+          'AvgDuration': '%.2f seconds' % progress.avg_duration
+      }
+      if progress.last_error is not None:
+        error_text = repr(progress.last_error)
+        if len(error_text) >= 64:
+          error_text = f'{error_text[:64]}...'
+        postfix['LastError'] = error_text
 
-        progress_bar.set_postfix(postfix)
-        progress_bar.update(1)
+      progress_bar.set_postfix(postfix)
+      progress_bar.update(1)
 
     if ordered:
       for future in pending_futures:

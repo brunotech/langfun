@@ -173,9 +173,7 @@ class Schema(lf.NaturalLanguageFormattable, pg.Object):
   @classmethod
   def from_value(cls, value) -> 'Schema':
     """Creates a schema from an equivalent representation."""
-    if isinstance(value, Schema):
-      return value
-    return cls(parse_value_spec(value))
+    return value if isinstance(value, Schema) else cls(parse_value_spec(value))
 
 
 def _top_level_object_specs_from_value(value: pg.Symbolic) -> list[Type[Any]]:
@@ -302,8 +300,7 @@ class SchemaPythonRepr(SchemaRepr):
 
   def repr(self, schema: Schema) -> str:
     ret = self.result_definition(schema)
-    class_definition_str = self.class_definitions(schema)
-    if class_definition_str:
+    if class_definition_str := self.class_definitions(schema):
       ret += f'\n\n```python\n{class_definition_str}```'
     return ret
 
@@ -341,13 +338,11 @@ def class_definition(cls, strict: bool = False) -> str:
         f'Encountered: {cls}.'
     )
   schema = cls.__schema__
-  eligible_bases = []
-  for base_cls in cls.__bases__:
-    if issubclass(base_cls, pg.Symbolic) and not base_cls.__module__.startswith(
-        'pyglove'
-    ):
-      eligible_bases.append(base_cls.__name__)
-  if eligible_bases:
+  if eligible_bases := [
+      base_cls.__name__ for base_cls in cls.__bases__
+      if issubclass(base_cls, pg.Symbolic)
+      and not base_cls.__module__.startswith('pyglove')
+  ]:
     base_cls_str = ', '.join(eligible_bases)
     out.write(f'class {cls.__name__}({base_cls_str}):\n')
   else:
@@ -397,18 +392,17 @@ def annotation(
   elif isinstance(vs, pg.typing.Str):
     if vs.regex is None:
       x = 'str'
+    elif strict:
+      x = f"pg.typing.Str(regex='{vs.regex.pattern}')"
     else:
-      if strict:
-        x = f"pg.typing.Str(regex='{vs.regex.pattern}')"
-      else:
-        x = f"str(regex='{vs.regex.pattern}')"
+      x = f"str(regex='{vs.regex.pattern}')"
   elif isinstance(vs, pg.typing.Number):
     constraints = []
-    min_label = 'min_value' if strict else 'min'
-    max_label = 'max_value' if strict else 'max'
     if vs.min_value is not None:
+      min_label = 'min_value' if strict else 'min'
       constraints.append(f'{min_label}={vs.min_value}')
     if vs.max_value is not None:
+      max_label = 'max_value' if strict else 'max'
       constraints.append(f'{max_label}={vs.max_value}')
     x = 'int' if isinstance(vs, pg.typing.Int) else 'float'
     if constraints:
@@ -493,11 +487,12 @@ class SchemaJsonRepr(SchemaRepr):
           if node.regex is not None:
             x += f'(regex={node.regex.pattern})'
         if node.is_noneable:
-          x = x + ' | None'
+          x = f'{x} | None'
         out.write(x)
       else:
         raise ValueError(
             f'Unsupported value spec being used as schema: {node}.')
+
     _visit(schema.schema_dict())
     return out.getvalue()
 
@@ -533,9 +528,7 @@ class ValuePythonRepr(ValueRepr):
     del schema
     object_code = pg.format(
         value, compact=compact, verbose=verbose, python_format=True)
-    if markdown:
-      return f'```python\n{ object_code }\n```'
-    return object_code
+    return f'```python\n{object_code}\n```' if markdown else object_code
 
   def parse(
       self,

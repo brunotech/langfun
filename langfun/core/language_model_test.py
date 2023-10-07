@@ -184,11 +184,8 @@ class LanguageModelTest(unittest.TestCase):
                    top_k=1,
                    failures_before_attempt=1,
                    max_attempts=1)
-    try:
+    with contextlib.suppress(concurrent.RetryError):
       lm.sample(['a']),
-    except concurrent.RetryError:
-      pass
-
     lm = MockModel(cache=cache, top_k=1)
     self.assertEqual(lm('a'), 'a')
 

@@ -197,12 +197,11 @@ class PythonCodeParser(lf.Component):
           and i < len(code_text) - 2
           and code_text[i:i + 3] == '```'):
         in_code = not in_code
-        if in_code:
-          i += 3
-          continue
-        else:
+        if not in_code:
           break
 
+        i += 3
+        continue
       if in_code:
         code.write(c)
 
@@ -224,11 +223,7 @@ class PythonCodeParser(lf.Component):
       i += 1
 
     code = code.getvalue()
-    if code:
-      code = code.lstrip('python')
-    else:
-      # Maybe-code that resides not within a code markdown block.
-      code = code_text
+    code = code.lstrip('python') if code else code_text
     return inspect.cleandoc(code).strip()
 
 
@@ -331,9 +326,7 @@ def run(
     result_vars = [_FINAL_RESULT_KEY]
 
     if isinstance(last_expr, ast.Assign):
-      for name_node in last_expr.targets:
-        result_vars.append(name_node.id)
-
+      result_vars.extend(name_node.id for name_node in last_expr.targets)
     last_expr = ast.Expression(last_expr.value)  # pytype: disable=attribute-error
 
     try:

@@ -36,9 +36,8 @@ class ExcitedEchoer(language_model.LanguageModel):
       self,
       prompts: list[message.Message]) -> list[language_model.LMSamplingResult]:
     return [
-        language_model.LMSamplingResult([
-            language_model.LMSample(prompt.text + '!!!')
-            ]) for prompt in prompts
+        language_model.LMSamplingResult(
+            [language_model.LMSample(f'{prompt.text}!!!')]) for prompt in prompts
     ]
 
 
@@ -122,8 +121,7 @@ class LangFuncCallTest(unittest.TestCase):
     # Test input transform on text.
     l = LangFunc(
         'Hello',
-        input_transform=message_transform.Lambda(lambda x: str(x) + '?'),
-    )
+        input_transform=message_transform.Lambda(lambda x: f'{str(x)}?'))
     i = l.render()
     self.assertEqual(i, message.UserMessage('Hello?'))
     self.assertEqual(i.tags, ['transformed'])
@@ -144,7 +142,6 @@ class LangFuncCallTest(unittest.TestCase):
       self.assertEqual(i.tags, ['rendered'])
       self.assertEqual(l(skip_input_transform=True), 'Hello!!!')
 
-    # Test transform that operates on the entire input message.
     class NewMessageTransform(message_transform.MessageTransform):
       suffix: str
       input_path = ''

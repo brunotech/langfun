@@ -88,8 +88,7 @@ class OpenAI(lf.LanguageModel):
           '`OPENAI_API_KEY` with your OpenAI API key.'
       )
     openai.api_key = api_key
-    org = self.organization or os.environ.get('OPENAI_ORGANIZATION', None)
-    if org:
+    if org := self.organization or os.environ.get('OPENAI_ORGANIZATION', None):
       openai.organization = org
 
   @property

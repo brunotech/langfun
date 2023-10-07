@@ -141,9 +141,7 @@ class Message(natural_language.NaturalLanguageFormattable, pg.Object):
   @classmethod
   def from_value(cls, value: Union[str, 'Message']) -> 'Message':
     """Creates a message from a value or return value itself if a Message."""
-    if isinstance(value, Message):
-      return value
-    return cls(value)
+    return value if isinstance(value, Message) else cls(value)
 
   #
   # Unified interface for accessing text, result and metadata.
@@ -190,9 +188,8 @@ class Message(natural_language.NaturalLanguageFormattable, pg.Object):
       return self
     if key_path == Message.PATH_TEXT:
       return self.text
-    else:
-      v = self.metadata.sym_get(key_path, default)
-      return v.value if isinstance(v, pg.Ref) else v
+    v = self.metadata.sym_get(key_path, default)
+    return v.value if isinstance(v, pg.Ref) else v
 
   #
   # API for accessing the structured result and error.

@@ -181,7 +181,7 @@ class SequentialTest(MultiTransformCompositionTest):
     self.assertEqual(r.tags, [AIMessage.TAG_TRANSFORMED])
 
     # Take message as the input, output transformed text as the message text.
-    y = lambda x: str(x) + '!'
+    y = lambda x: f'{str(x)}!'
     t = (base.Lambda(y) >> y >> y).as_text()
     r = t.transform(AIMessage('hi'))
     self.assertEqual(r, AIMessage('hi!!!'))

@@ -52,8 +52,9 @@ def colored(
   return termcolor.colored(
       text,
       color=color,
-      on_color=('on_' + background) if background else None,
-      attrs=styles)
+      on_color=f'on_{background}' if background else None,
+      attrs=styles,
+  )
 
 
 def colored_template(

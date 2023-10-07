@@ -39,8 +39,7 @@ class ConversationHistory(lf.Memory):
     """Return conversation messages."""
     messages = []
     for r in self.turns:
-      messages.append(r[0])
-      messages.append(r[1])
+      messages.extend((r[0], r[1]))
     return messages
 
   def _recollect(self, **kwargs) -> lf.MemoryRecord:

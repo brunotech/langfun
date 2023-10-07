@@ -25,12 +25,12 @@ def mock_completion_query(prompt, *, n=1, **kwargs):
   del kwargs
   choices = []
   for i, _ in enumerate(prompt):
-    for k in range(n):
-      choices.append(pg.Dict(
-          index=i,
-          text=f'Sample {k} for prompt {i}.',
-          logprobs=k / 10,
-      ))
+    choices.extend(
+        pg.Dict(
+            index=i,
+            text=f'Sample {k} for prompt {i}.',
+            logprobs=k / 10,
+        ) for k in range(n))
   return pg.Dict(choices=choices, usage=openai.Usage(
       prompt_tokens=100,
       completion_tokens=100,
@@ -40,13 +40,10 @@ def mock_completion_query(prompt, *, n=1, **kwargs):
 
 def mock_chat_completion_query(messages, *, n=1, **kwargs):
   del messages, kwargs
-  choices = []
-  for k in range(n):
-    choices.append(pg.Dict(
-        message=pg.Dict(
-            content=f'Sample {k} for message.'
-        )
-    ))
+  choices = [
+      pg.Dict(message=pg.Dict(content=f'Sample {k} for message.'))
+      for k in range(n)
+  ]
   return pg.Dict(choices=choices, usage=openai.Usage(
       prompt_tokens=100,
       completion_tokens=100,

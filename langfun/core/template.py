@@ -116,10 +116,7 @@ class Template(
 
     docstr = inspect.cleandoc(docstr)
     doc_start = docstr.find('\n')
-    if doc_start == -1:
-      return ''
-
-    return docstr[doc_start + 1 :].strip()
+    return '' if doc_start == -1 else docstr[doc_start + 1 :].strip()
 
   @classmethod
   def resolve_vars(cls, template_str: str) -> Set[str]:
@@ -141,13 +138,10 @@ class Template(
     self.__dict__.pop('_variables', None)
     self.__dict__.pop('_template', None)
 
-    # Use contextual value for unassigned attributes.
-    # TODO(daiyip): Consider to delay template parsing upon usage.
-    unassigned_vars = {}
-    for k in self._variables:
-      if not hasattr(self, k):
-        unassigned_vars[k] = component.contextual()
-    if unassigned_vars:
+    if unassigned_vars := {
+        k: component.contextual()
+        for k in self._variables if not hasattr(self, k)
+    }:
       self.rebind(unassigned_vars, skip_notification=True)
 
     # Last render output.

@@ -383,9 +383,8 @@ class StructureToStructure(Mapping):
         value, compact=False, verbose=True)
 
   def missing_type_dependencies(self, value: Any) -> list[Type[Any]]:
-    value_specs = tuple(
-        [v.value_spec for v in schema_lib.Missing.find_missing(value).values()]
-    )
+    value_specs = tuple(v.value_spec
+                        for v in schema_lib.Missing.find_missing(value).values())
     return schema_lib.class_dependencies(value_specs, include_subclasses=True)
 
   def type_definitions_str(self, value: Any) -> str | None:
